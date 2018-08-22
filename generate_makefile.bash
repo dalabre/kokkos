@@ -97,6 +97,12 @@ do
         echo "Invalid compiler by --compiler command: '${COMPILER}'"
         exit
       fi
+      # ... valid compiler, ensure absolute path set 
+      WCOMPATH=`which $COMPILER`
+      COMPDIR=`dirname $WCOMPATH`
+      COMPNAME=`basename $WCOMPATH`
+      COMPILER=$COMPDIR"/"$COMPNAME
+      echo "COMPILER set: '${COMPILER}'"
       ;;
     --with-options*)
       KOKKOS_OPT="${key#*=}"
@@ -206,6 +212,11 @@ KOKKOS_SETTINGS="KOKKOS_SRC_PATH=${KOKKOS_SRC_PATH}"
 
 if [ ${#COMPILER} -gt 0 ]; then
   KOKKOS_SETTINGS="${KOKKOS_SETTINGS} CXX=${COMPILER}"
+elif
+  [ ${#COMPILER} -eq 0 ] && [ ${#KOKKOS_DEVICES} -gt 0 ]; then
+    COMPILER="${KOKKOS_PATH}/bin/nvcc_wrapper"                                                  
+    KOKKOS_SETTINGS="${KOKKOS_SETTINGS} CXX=${COMPILER}"   
+    #echo "CXX= ${CXX}"
 fi
 
 if [ ${#KOKKOS_DEVICES} -gt 0 ]; then
@@ -276,7 +287,7 @@ fi
 
 mkdir -p install
 gen_makefile=Makefile.kokkos
-echo "#Makefile to satisfy existens of target kokkos-clean before installing the library" > install/${gen_makefile}
+echo "#Makefile to satisfy existence of target kokkos-clean before installing the library" > install/${gen_makefile}
 echo "kokkos-clean:" >> install/${gen_makefile}
 echo "" >> install/${gen_makefile}
 mkdir -p core
